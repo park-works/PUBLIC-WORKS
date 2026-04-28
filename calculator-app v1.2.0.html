@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>종합 변환 계산기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f7;
+  --bg3: #ebebef;
+  --border: #d8d8e0;
+  --border2: #c0c0cc;
+  --text: #111111;
+  --text2: #444455;
+  --text3: #888899;
+  --accent: #4444ee;
+  --accent2: #3333cc;
+  --green: #0077aa;
+  --red: #cc2222;
+  --yellow: #886600;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app-header {
+  width: 100%;
+  max-width: 540px;
+  padding: 2rem 1rem 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.app-header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+}
+.app-header span {
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 300;
+}
+.app {
+  width: 100%;
+  max-width: 540px;
+  padding: 0.75rem 1rem 3rem;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg2);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Noto Sans KR', sans-serif;
+  white-space: nowrap;
+}
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(68,68,238,0.25);
+}
+.tab:hover:not(.active) { color: var(--text); background: var(--bg3); }
+.page { display: none; }
+.page.active { display: block; }
+
+/* CARDS */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 0.75rem;
+}
+.card-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: 0.01em;
+  margin-bottom: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* INPUTS */
+.row3 { display: flex; gap: 6px; }
+.row3 input {
+  flex: 1;
+  height: 42px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 0 8px;
+  text-align: center;
+  transition: border-color 0.2s;
+  min-width: 0;
+}
+.row3 input:focus { outline: none; border-color: var(--accent); }
+.row3 input::placeholder { color: var(--text3); font-size: 13px; font-weight: 400; }
+
+/* LIVE AGE */
+.live-box {
+  background: linear-gradient(135deg, rgba(68,68,238,0.07), rgba(0,120,200,0.04));
+  border: 1px solid rgba(68,68,238,0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  margin-top: 0.85rem;
+  display: none;
+}
+.live-val { font-size: 22px; font-weight: 700; color: var(--accent2); font-family: 'JetBrains Mono', monospace; }
+.live-sub { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.age-result-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-top: 0.75rem;
+  display: none;
+}
+.rg { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0.7rem 0; }
+.rc {
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 12px 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.rn { font-size: 22px; font-weight: 600; color: var(--green); font-family: 'JetBrains Mono', monospace; }
+.ru { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.rdet { font-size: 12px; color: var(--text2); line-height: 1.8; border-top: 1px solid var(--border); padding-top: 0.7rem; margin-top: 0.5rem; }
+.rdet strong { color: var(--yellow); }
+
+/* UNIT CONVERTER */
+.utabs { display: flex; gap: 6px; margin-bottom: 1rem; }
+.utab {
+  padding: 6px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text2);
+  transition: all 0.15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.utab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 10px rgba(108,108,255,0.3); }
+.upage { display: none; }
+.upage.active { display: block; }
+.urow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.urow input {
+  flex: 1;
+  height: 46px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 0 12px;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+.urow input:focus { outline: none; border-color: var(--accent); }
+.urow input::placeholder { color: var(--text3); font-size: 14px; font-weight: 400; }
+.urow select {
+  width: 72px;
+  flex-shrink: 0;
+  height: 46px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #111111;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 4px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.urow select:focus { outline: none; border-color: var(--accent); }
+.swap-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  margin: 2px auto;
+}
+.swap-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.qgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; margin-top: 0.75rem; }
+.qi {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.qi span { color: var(--text); font-weight: 500; font-family: 'JetBrains Mono', monospace; display: block; margin-top: 1px; font-size: 12px; }
+
+/* EXCHANGE */
+.fx-top { display: flex; gap: 8px; align-items: center; margin-bottom: 0.75rem; }
+.fx-amt {
+  flex: 1;
+  height: 52px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 0 14px;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+.fx-amt:focus { outline: none; border-color: var(--accent); }
+.fx-base-sel {
+  width: 100px;
+  flex-shrink: 0;
+  height: 52px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #111111;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 4px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.fx-status { font-size: 10px; color: var(--text3); margin-bottom: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+.fx-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 7px; }
+.fx-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fx-card:hover { border-color: var(--border2); background: var(--bg3); }
+.fx-card.active-base { border-color: var(--accent); box-shadow: 0 0 10px rgba(68,68,238,0.15); }
+.fx-flag { font-size: 16px; margin-bottom: 2px; }
+.fx-name { font-size: 10px; color: var(--text3); }
+.fx-val { font-size: 16px; font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.fx-rate { font-size: 10px; color: var(--text3); margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+.fx-refresh {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  margin-top: 0.75rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.15s;
+}
+.fx-refresh:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* CALCULATOR */
+.c-display {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem 0.9rem;
+  margin-bottom: 10px;
+  text-align: right;
+  min-height: 96px;
+}
+.c-expr { font-size: 14px; color: var(--text3); min-height: 18px; margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; word-break: break-all; }
+.c-main { font-size: 46px; font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; word-break: break-all; line-height: 1.15; }
+.cgrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; }
+.ck {
+  height: 68px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 26px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+.ck:active { transform: scale(0.93); }
+.kn { background: var(--bg3); border: 1px solid var(--border); color: var(--text); }
+.kn:hover { background: var(--bg2); }
+.ko { background: var(--bg2); border: 1px solid var(--border2); color: var(--accent2); font-size: 24px; }
+.ko:hover { border-color: var(--accent); }
+.keq { background: var(--accent); color: #fff; box-shadow: 0 3px 14px rgba(68,68,238,0.3); }
+.keq:hover { opacity: 0.9; }
+.kz { grid-column: span 2; }
+.kf { background: var(--bg2); border: 1px solid var(--border); color: var(--text2); font-size: 17px; }
+.kf:hover { color: var(--text); border-color: var(--border2); }
+
+/* FX MANUAL INPUT */
+.fx-manual-box {
+  margin-top: 0.85rem;
+  background: #fffbeb;
+  border: 1.5px dashed #f0b429;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem 0.7rem;
+}
+.fx-manual-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.fx-manual-title span:first-child {
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+}
+.fx-manual-hint {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: #b45309 !important;
+}
+.fx-manual-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fx-manual-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fx-manual-input {
+  flex: 1;
+  height: 40px;
+  background: #fff;
+  border: 1.5px solid #f0b429;
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 17px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 0 10px;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+.fx-manual-input:focus { outline: none; border-color: #d97706; }
+.fx-manual-input::placeholder { color: #ccc; font-size: 14px; font-weight: 400; }
+.fx-manual-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fx-manual-clear {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid #d97706;
+  border-radius: 20px;
+  font-size: 11px;
+  color: #b45309;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fx-manual-clear:hover { background: #fef3c7; }
+.fx-manual-note {
+  font-size: 11px;
+  color: #b45309;
+  margin-top: 6px;
+}
+.fx-manual-active .fx-manual-note { color: #059669; font-weight: 500; }
+
+/* BOK API KEY INPUT */
+.bok-api-box {
+  background: #f0f7ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem 0.7rem;
+  margin-bottom: 0.75rem;
+}
+.bok-api-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 6px;
+}
+.bok-api-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.bok-api-input {
+  flex: 1;
+  height: 40px;
+  background: #fff;
+  border: 1.5px solid #93c5fd;
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 0 10px;
+  min-width: 0;
+  letter-spacing: 0.05em;
+}
+.bok-api-input:focus { outline: none; border-color: #3b82f6; }
+.bok-api-input::placeholder { color: #93c5fd; font-size: 12px; font-weight: 400; letter-spacing: 0; }
+.bok-api-btn {
+  padding: 0 14px;
+  height: 40px;
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.bok-api-btn:hover { background: #1e40af; }
+.bok-api-status {
+  font-size: 11px;
+  margin-top: 5px;
+  color: #6b7280;
+}
+.bok-api-status.ok { color: #059669; font-weight: 500; }
+.bok-api-status.err { color: #dc2626; }
+
+/* FX LINK TAB */
+.fx-link-tab {
+  color: #1d4ed8 !important;
+  font-weight: 600 !important;
+}
+.fx-link-tab.active, .fx-link-tab:hover {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  box-shadow: none !important;
+}
+
+/* FX REDIRECT PAGE */
+.fx-redirect-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-height: 320px;
+}
+.fx-redirect-icon {
+  font-size: 52px;
+  margin-bottom: 1rem;
+}
+.fx-redirect-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+}
+.fx-redirect-desc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.fx-redirect-btn {
+  padding: 14px 32px;
+  background: #03C75A;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: opacity 0.15s;
+  box-shadow: 0 4px 14px rgba(3,199,90,0.3);
+}
+.fx-redirect-btn:hover { opacity: 0.88; }
+.fx-redirect-note {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 0.85rem;
+}
+
+/* FX IFRAME */
+.fx-iframe-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.fx-iframe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #93c5fd;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e40af;
+}
+.fx-newwin-btn {
+  padding: 5px 12px;
+  background: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.fx-newwin-btn:hover { background: #1e40af; }
+.fx-iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  display: block;
+  background: #fff;
+}
+.fx-iframe-note {
+  font-size: 11px;
+  color: var(--text3);
+  text-align: center;
+  padding: 8px;
+  background: var(--bg2);
+}
+
+/* FX LIVE */
+.fx-input-row { display: flex; gap: 8px; align-items: center; }
+.fx-amount-input {
+  flex: 1;
+  height: 50px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #1a56db;
+  font-size: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  padding: 0 12px;
+  min-width: 0;
+}
+.fx-amount-input:focus { outline: none; border-color: var(--accent); }
+.fx-base-select {
+  height: 50px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: #111;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 6px;
+  width: 110px;
+  flex-shrink: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.fx-live-status {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.fx-live-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+  margin-bottom: 0.75rem;
+}
+.fx-live-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.fx-live-item:hover { border-color: var(--accent); }
+.fx-live-item.is-base { border-color: var(--accent); background: #eff6ff; }
+.fx-live-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.fx-live-flag { font-size: 16px; }
+.fx-live-code { font-size: 11px; font-weight: 600; color: var(--text2); font-family: 'JetBrains Mono', monospace; }
+.fx-live-name { font-size: 10px; color: var(--text3); margin-bottom: 3px; }
+.fx-live-val { font-size: 17px; font-weight: 700; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+.fx-live-rate { font-size: 10px; color: var(--text3); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.fx-loading { grid-column: span 2; text-align: center; padding: 2rem; color: var(--text2); font-size: 13px; }
+.fx-reload-btn {
+  width: 100%;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.15s;
+}
+.fx-reload-btn:hover { border-color: var(--accent); color: var(--accent2); }
+</style>
+</head>
+<body>
+<div class="app-header">
+  <h1>// CALC.APP</h1>
+  <span>나이 · 단위 · 환율 · 계산기</span>
+</div>
+<div class="app">
+  <div class="tabs">
+    <button class="tab active" onclick="switchPage('age',this)">나이 계산기</button>
+    <button class="tab" onclick="switchPage('unit',this)">단위 변환기</button>
+    <button class="tab" onclick="switchPage('calc',this)">계산기</button>
+    <button class="tab" onclick="switchPage('fx',this)">환율 계산기</button>
+  </div>
+
+  <!-- AGE -->
+  <div id="page-age" class="page active">
+    <div class="card">
+      <div class="card-label">생년월일</div>
+      <div class="row3">
+        <input type="number" id="by" placeholder="년도" min="1900" max="2030"
+          oninput="liveAge()" onkeyup="autoTab(this,'bm',4)">
+        <input type="number" id="bm" placeholder="월" min="1" max="12"
+          oninput="liveAge()" onkeyup="autoTab(this,'bd',2)">
+        <input type="number" id="bd" placeholder="일" min="1" max="31"
+          oninput="liveAge()">
+      </div>
+      <div class="live-box" id="live-box">
+        <div class="live-val" id="live-val"></div>
+        <div class="live-sub" id="live-sub"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">기준 날짜 (비워두면 오늘)</div>
+      <div class="row3">
+        <input type="number" id="ry" placeholder="년도" min="1900" max="2200"
+          oninput="liveAge()" onkeyup="autoTab(this,'rm',4)">
+        <input type="number" id="rm" placeholder="월" min="1" max="12"
+          oninput="liveAge()" onkeyup="autoTab(this,'rd',2)">
+        <input type="number" id="rd" placeholder="일" min="1" max="31"
+          oninput="liveAge()">
+      </div>
+    </div>
+    <div class="age-result-card" id="age-result">
+      <div class="card-label" id="age-rtitle"></div>
+      <div class="rg">
+        <div class="rc"><div class="rn" id="r-y">—</div><div class="ru">세</div></div>
+        <div class="rc"><div class="rn" id="r-m">—</div><div class="ru">개월</div></div>
+        <div class="rc"><div class="rn" id="r-d">—</div><div class="ru">일</div></div>
+      </div>
+      <div class="rdet" id="r-det"></div>
+    </div>
+  </div>
+
+  <!-- UNIT -->
+  <div id="page-unit" class="page">
+    <div class="utabs">
+      <button class="utab active" onclick="switchUnit('length',this)">길이</button>
+      <button class="utab" onclick="switchUnit('area',this)">넓이</button>
+      <button class="utab" onclick="switchUnit('weight',this)">무게</button>
+    </div>
+    <div class="card">
+      <div id="u-length" class="upage active">
+        <div class="urow">
+          <input type="number" id="lv1" placeholder="값 입력" oninput="uConvert('l',1)">
+          <select id="lu1" onchange="uConvert('l',1)">
+            <option value="mm">mm</option><option value="cm">cm</option>
+            <option value="m">m</option><option value="km">km</option>
+            <option value="in" selected>인치</option><option value="ft">피트</option>
+            <option value="yd">야드</option><option value="mi">마일</option>
+          </select>
+        </div>
+        <div style="text-align:center;margin:4px 0"><button class="swap-btn" onclick="uSwap('l')">⇅</button></div>
+        <div class="urow">
+          <input type="number" id="lv2" placeholder="결과" oninput="uConvert('l',2)">
+          <select id="lu2" onchange="uConvert('l',1)">
+            <option value="mm">mm</option><option value="cm" selected>cm</option>
+            <option value="m">m</option><option value="km">km</option>
+            <option value="in">인치</option><option value="ft">피트</option>
+            <option value="yd">야드</option><option value="mi">마일</option>
+          </select>
+        </div>
+        <div class="qgrid" id="lq"></div>
+      </div>
+
+      <div id="u-area" class="upage">
+        <div class="urow">
+          <input type="number" id="av1" placeholder="값 입력" oninput="uConvert('a',1)">
+          <select id="au1" onchange="uConvert('a',1)">
+            <option value="py" selected>평</option><option value="cm2">cm²</option>
+            <option value="m2">m²</option><option value="km2">km²</option>
+            <option value="ha">ha</option><option value="ft2">ft²</option><option value="ac">에이커</option>
+          </select>
+        </div>
+        <div style="text-align:center;margin:4px 0"><button class="swap-btn" onclick="uSwap('a')">⇅</button></div>
+        <div class="urow">
+          <input type="number" id="av2" placeholder="결과" oninput="uConvert('a',2)">
+          <select id="au2" onchange="uConvert('a',1)">
+            <option value="py">평</option><option value="cm2">cm²</option>
+            <option value="m2" selected>m²</option><option value="km2">km²</option>
+            <option value="ha">ha</option><option value="ft2">ft²</option><option value="ac">에이커</option>
+          </select>
+        </div>
+        <div class="qgrid" id="aq"></div>
+      </div>
+
+      <div id="u-weight" class="upage">
+        <div class="urow">
+          <input type="number" id="wv1" placeholder="값 입력" oninput="uConvert('w',1)">
+          <select id="wu1" onchange="uConvert('w',1)">
+            <option value="mg">mg</option><option value="g">g</option>
+            <option value="kg" selected>kg</option><option value="t">톤</option>
+            <option value="lb">파운드</option><option value="oz">온스</option>
+            <option value="gn">돈</option><option value="gk">근</option>
+          </select>
+        </div>
+        <div style="text-align:center;margin:4px 0"><button class="swap-btn" onclick="uSwap('w')">⇅</button></div>
+        <div class="urow">
+          <input type="number" id="wv2" placeholder="결과" oninput="uConvert('w',2)">
+          <select id="wu2" onchange="uConvert('w',1)">
+            <option value="mg">mg</option><option value="g">g</option>
+            <option value="kg">kg</option><option value="t">톤</option>
+            <option value="lb" selected>파운드</option><option value="oz">온스</option>
+            <option value="gn">돈</option><option value="gk">근</option>
+          </select>
+        </div>
+        <div class="qgrid" id="wq"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXCHANGE -->
+  <div id="page-fx" class="page">
+    <!-- 기준 금액 입력 -->
+    <div class="card">
+      <div class="card-label">기준 금액 및 통화</div>
+      <div class="fx-input-row">
+        <input type="number" id="fx-amount" class="fx-amount-input" value="1" oninput="calcFxLive()">
+        <select id="fx-base" class="fx-base-select" onchange="calcFxLive()">
+          <option value="KRW">🇰🇷 KRW 원</option>
+          <option value="USD" selected>🇺🇸 USD 달러</option>
+          <option value="JPY">🇯🇵 JPY 엔</option>
+          <option value="CNY">🇨🇳 CNY 위안</option>
+          <option value="EUR">🇪🇺 EUR 유로</option>
+          <option value="GBP">🇬🇧 GBP 파운드</option>
+          <option value="VND">🇻🇳 VND 동</option>
+          <option value="THB">🇹🇭 THB 바트</option>
+          <option value="TWD">🇹🇼 TWD 달러</option>
+          <option value="AUD">🇦🇺 AUD 달러</option>
+          <option value="SGD">🇸🇬 SGD 달러</option>
+          <option value="HKD">🇭🇰 HKD 달러</option>
+        </select>
+      </div>
+      <div class="fx-live-status" id="fx-live-status">환율 불러오는 중...</div>
+    </div>
+    <!-- 환율 결과 그리드 -->
+    <div class="fx-live-grid" id="fx-live-grid">
+      <div class="fx-loading">⏳ 실시간 환율 조회 중...</div>
+    </div>
+    <button class="fx-reload-btn" onclick="fetchFxLive()">↻ 환율 새로고침</button>
+  </div>
+
+  <!-- CALC -->
+  <div id="page-calc" class="page" tabindex="-1">
+    <div class="c-display">
+      <div class="c-expr" id="c-expr"></div>
+      <div class="c-main" id="c-main">0</div>
+    </div>
+    <div class="cgrid">
+      <button class="ck kf" onclick="cFn('MC')">MC</button>
+      <button class="ck kf" onclick="cFn('MR')">MR</button>
+      <button class="ck kf" onclick="cFn('M+')">M+</button>
+      <button class="ck kf" onclick="cFn('M-')">M−</button>
+      <button class="ck ko" onclick="cOp('AC')">AC</button>
+      <button class="ck ko" onclick="cOp('+/-')">+/−</button>
+      <button class="ck ko" onclick="cOp('%')">%</button>
+      <button class="ck ko" onclick="cOp('÷')">÷</button>
+      <button class="ck kn" onclick="cNum('7')">7</button>
+      <button class="ck kn" onclick="cNum('8')">8</button>
+      <button class="ck kn" onclick="cNum('9')">9</button>
+      <button class="ck ko" onclick="cOp('×')">×</button>
+      <button class="ck kn" onclick="cNum('4')">4</button>
+      <button class="ck kn" onclick="cNum('5')">5</button>
+      <button class="ck kn" onclick="cNum('6')">6</button>
+      <button class="ck ko" onclick="cOp('−')">−</button>
+      <button class="ck kn" onclick="cNum('1')">1</button>
+      <button class="ck kn" onclick="cNum('2')">2</button>
+      <button class="ck kn" onclick="cNum('3')">3</button>
+      <button class="ck ko" onclick="cOp('+')">+</button>
+      <button class="ck kn kz" onclick="cNum('0')">0</button>
+      <button class="ck kn" onclick="cNum('.')">.</button>
+      <button class="ck keq" onclick="cOp('=')">=</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// PAGE SWITCH
+function switchPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='calc') setTimeout(()=>document.getElementById('page-calc').focus(),50);
+  if(id==='fx') fetchFxLive();
+}
+
+// ─── 실시간 환율 (open.er-api.com) ───
+const FX_LIST=[
+  {code:'KRW',flag:'🇰🇷',name:'한국 원'},
+  {code:'USD',flag:'🇺🇸',name:'미국 달러'},
+  {code:'JPY',flag:'🇯🇵',name:'일본 엔'},
+  {code:'CNY',flag:'🇨🇳',name:'중국 위안'},
+  {code:'EUR',flag:'🇪🇺',name:'유로'},
+  {code:'GBP',flag:'🇬🇧',name:'영국 파운드'},
+  {code:'VND',flag:'🇻🇳',name:'베트남 동'},
+  {code:'THB',flag:'🇹🇭',name:'태국 바트'},
+  {code:'TWD',flag:'🇹🇼',name:'대만 달러'},
+  {code:'AUD',flag:'🇦🇺',name:'호주 달러'},
+  {code:'SGD',flag:'🇸🇬',name:'싱가포르 달러'},
+  {code:'HKD',flag:'🇭🇰',name:'홍콩 달러'},
+];
+const FX_FALLBACK={KRW:1,USD:0.000730,JPY:0.1097,CNY:0.00530,EUR:0.000673,GBP:0.000578,VND:18.56,THB:0.02641,TWD:0.02356,AUD:0.001130,SGD:0.000984,HKD:0.00568};
+let fxLiveRates={};
+let fxLiveLoaded=false;
+
+async function fetchFxLive(){
+  document.getElementById('fx-live-status').textContent='실시간 환율 불러오는 중...';
+  document.getElementById('fx-live-grid').innerHTML='<div class="fx-loading">⏳ 조회 중...</div>';
+  try{
+    // open.er-api.com — 무료, CORS 허용, 분당 갱신
+    const res=await fetch('https://open.er-api.com/v6/latest/KRW');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.result!=='success') throw new Error('API 오류');
+    fxLiveRates=data.rates;
+    fxLiveLoaded=true;
+    const updated=data.time_last_update_utc
+      ? new Date(data.time_last_update_utc).toLocaleString('ko-KR')
+      : new Date().toLocaleString('ko-KR');
+    document.getElementById('fx-live-status').textContent='✅ 실시간 환율 · 업데이트: '+updated;
+    calcFxLive();
+  }catch(e){
+    console.warn('FX fetch fail:',e.message);
+    // Fallback: ECB
+    try{
+      const r2=await fetch('https://api.frankfurter.app/latest?from=KRW&to=USD,JPY,CNY,EUR,GBP,VND,THB,TWD,AUD,SGD,HKD');
+      const d2=await r2.json();
+      fxLiveRates={KRW:1,...d2.rates};
+      fxLiveLoaded=true;
+      document.getElementById('fx-live-status').textContent='✅ ECB 환율 · 기준일: '+d2.date;
+      calcFxLive();
+    }catch(e2){
+      fxLiveRates=FX_FALLBACK;
+      fxLiveLoaded=true;
+      document.getElementById('fx-live-status').textContent='⚠ 네트워크 오류 · 참고용 근사값';
+      calcFxLive();
+    }
+  }
+}
+
+function calcFxLive(){
+  if(!fxLiveLoaded) return;
+  const amt=parseFloat(document.getElementById('fx-amount').value)||0;
+  const base=document.getElementById('fx-base').value;
+  // base → KRW 환산율
+  const baseToKrw=fxLiveRates[base]?1/fxLiveRates[base]:1;
+  const amtInKrw=amt*baseToKrw;
+
+  const fmt=v=>{
+    if(Math.abs(v)>=10000) return v.toLocaleString('ko-KR',{maximumFractionDigits:0});
+    if(Math.abs(v)>=10) return v.toLocaleString('ko-KR',{maximumFractionDigits:2});
+    return v.toLocaleString('ko-KR',{maximumFractionDigits:4});
+  };
+
+  document.getElementById('fx-live-grid').innerHTML=FX_LIST.map(c=>{
+    const rate=fxLiveRates[c.code]||0;
+    const converted=amtInKrw*rate;
+    const isBase=c.code===base;
+    // 1 base = ? c.code
+    const r1=(fxLiveRates[c.code]||0)/(fxLiveRates[base]||1);
+    let rateStr;
+    if(isBase) rateStr='기준 통화';
+    else if(c.code==='JPY'||c.code==='VND')
+      rateStr=`100 ${base} = ${(r1*100).toFixed(2)} ${c.code}`;
+    else
+      rateStr=`1 ${base} = ${r1>=1?r1.toFixed(2):r1.toFixed(4)} ${c.code}`;
+
+    return `<div class="fx-live-item${isBase?' is-base':''}" onclick="setFxBase('${c.code}')">
+      <div class="fx-live-top">
+        <span class="fx-live-flag">${c.flag}</span>
+        <span class="fx-live-code">${c.code}</span>
+      </div>
+      <div class="fx-live-name">${c.name}</div>
+      <div class="fx-live-val">${fmt(converted)}</div>
+      <div class="fx-live-rate">${rateStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function setFxBase(code){
+  document.getElementById('fx-base').value=code;
+  calcFxLive();
+}
+
+// AUTO TAB
+function autoTab(el, nextId, maxLen){
+  if(el.value.length >= maxLen){
+    const next = document.getElementById(nextId);
+    if(next){ next.focus(); next.select(); }
+  }
+}
+
+// AGE CALCULATOR
+function liveAge(){
+  const by=parseInt(document.getElementById('by').value)||0;
+  const bm=parseInt(document.getElementById('bm').value)||0;
+  const bd=parseInt(document.getElementById('bd').value)||0;
+  const ry=parseInt(document.getElementById('ry').value)||0;
+  const rm=parseInt(document.getElementById('rm').value)||0;
+  const rd=parseInt(document.getElementById('rd').value)||0;
+  const lbox=document.getElementById('live-box');
+  const lval=document.getElementById('live-val');
+  const lsub=document.getElementById('live-sub');
+  const rbox=document.getElementById('age-result');
+  if(!by){lbox.style.display='none';rbox.style.display='none';return;}
+  const today=new Date();
+  const refYear=ry||today.getFullYear();
+  const refMonth=rm||today.getMonth()+1;
+  const refDay=rd||today.getDate();
+  const simpleAge=refYear-by;
+  let ageStr='',subStr='';
+  if(!bm&&!bd){
+    ageStr=`만 ${simpleAge}세 ~ ${simpleAge+1}세`;
+    subStr=`${by}년생 · ${refYear}년 기준 (생일에 따라 달라짐)`;
+  } else if(bm&&!bd){
+    let age=simpleAge; if(refMonth<bm)age--;
+    ageStr=`만 ${age}세 ~ ${age+1}세`;
+    subStr=`${by}년 ${bm}월생 · 일자에 따라 달라짐`;
+  } else if(bm&&bd){
+    const birth=new Date(by,bm-1,bd);
+    const ref=new Date(refYear,refMonth-1,refDay);
+    if(birth>ref){lbox.style.display='none';rbox.style.display='none';return;}
+    let yy=refYear-by,mm=refMonth-bm,dd=refDay-bd;
+    if(dd<0){mm--;const prev=new Date(refYear,refMonth-1,0);dd+=prev.getDate();}
+    if(mm<0){yy--;mm+=12;}
+    ageStr=`만 ${yy}세 ${mm}개월 ${dd}일`;
+    const isRef=!ry&&!rm&&!rd;
+    subStr=isRef?`오늘(${today.getFullYear()}.${today.getMonth()+1}.${today.getDate()}) 기준`:`${refYear}.${refMonth}.${refDay} 기준`;
+    showFullResult({yy,mm,dd,by,bm,bd,refYear,refMonth,refDay,birth,ref});
+  }
+  lbox.style.display='block';
+  lval.textContent=ageStr;
+  lsub.textContent=subStr;
+  if(!(bm&&bd))rbox.style.display='none';
+}
+
+function showFullResult(d){
+  const rbox=document.getElementById('age-result');
+  if(!d){rbox.style.display='none';return;}
+  const {yy,mm,dd,by,bm,bd,refYear,refMonth,refDay,birth,ref}=d;
+  const today=new Date();
+  const isToday=!document.getElementById('ry').value&&!document.getElementById('rm').value&&!document.getElementById('rd').value;
+  const totalDays=Math.floor((ref-birth)/864e5);
+  const totalMonths=yy*12+mm;
+  const nextBday=new Date(refYear,bm-1,bd);
+  if(nextBday<=ref)nextBday.setFullYear(refYear+1);
+  const daysToNext=Math.floor((nextBday-ref)/864e5);
+  document.getElementById('age-rtitle').textContent=isToday?'현재 나이 상세':refYear+'년 '+refMonth+'월 '+refDay+'일 기준';
+  document.getElementById('r-y').textContent=yy;
+  document.getElementById('r-m').textContent=totalMonths;
+  document.getElementById('r-d').textContent=totalDays.toLocaleString();
+  document.getElementById('r-det').innerHTML=`${yy}세 ${mm}개월 ${dd}일 · 총 <strong>${totalDays.toLocaleString()}</strong>일<br>다음 생일까지 <strong>${daysToNext}</strong>일 남음`;
+  rbox.style.display='block';
+}
+
+// UNIT CONVERTER
+const TB={
+  l:{mm:0.001,cm:0.01,m:1,km:1000,in:0.0254,ft:0.3048,yd:0.9144,mi:1609.344},
+  a:{cm2:1e-4,m2:1,km2:1e6,ha:1e4,py:3.30579,ft2:0.092903,ac:4046.86},
+  w:{mg:1e-6,g:0.001,kg:1,t:1000,lb:0.453592,oz:0.0283495,gn:0.00375,gk:0.6}
+};
+const QU={l:['mm','cm','m','km','ft','mi'],a:['cm2','m2','ha','py','ft2','ac'],w:['g','kg','t','lb','oz']};
+const UN={
+  l:{mm:'mm',cm:'cm',m:'m',km:'km',in:'인치',ft:'피트',yd:'야드',mi:'마일'},
+  a:{cm2:'cm²',m2:'m²',km2:'km²',ha:'ha',py:'평',ft2:'ft²',ac:'에이커'},
+  w:{mg:'mg',g:'g',kg:'kg',t:'톤',lb:'파운드',oz:'온스',gn:'돈',gk:'근'}
+};
+
+function uConvert(t,dir){
+  const v1=document.getElementById(t+'v1');
+  const v2=document.getElementById(t+'v2');
+  const u1=document.getElementById(t+'u1');
+  const u2=document.getElementById(t+'u2');
+  const srcEl=dir===1?v1:v2;
+  const dstEl=dir===1?v2:v1;
+  const fromU=dir===1?u1.value:u2.value;
+  const toU=dir===1?u2.value:u1.value;
+  if(srcEl.value===''||srcEl.value===null){dstEl.value='';document.getElementById(t+'q').innerHTML='';return;}
+  const val=parseFloat(srcEl.value);
+  if(isNaN(val)){dstEl.value='';return;}
+  const base=val*TB[t][fromU];
+  const res=base/TB[t][toU];
+  const fmt=v=>Math.abs(v)<0.00001||Math.abs(v)>1e9?v.toExponential(4):parseFloat(v.toPrecision(8));
+  dstEl.value=fmt(res);
+  const bv=val*TB[t][fromU];
+  document.getElementById(t+'q').innerHTML=QU[t].map(u=>{
+    const r=bv/TB[t][u];
+    const d=Math.abs(r)<0.00001||Math.abs(r)>1e8?r.toExponential(3):parseFloat(r.toPrecision(5));
+    return `<div class="qi">${UN[t][u]}<span>${d}</span></div>`;
+  }).join('');
+}
+
+function uSwap(t){
+  const u1=document.getElementById(t+'u1');
+  const u2=document.getElementById(t+'u2');
+  const v1=document.getElementById(t+'v1');
+  const v2=document.getElementById(t+'v2');
+  [u1.value,u2.value]=[u2.value,u1.value];
+  [v1.value,v2.value]=[v2.value,v1.value];
+  uConvert(t,1);
+}
+
+function switchUnit(name,btn){
+  const map={length:'l',area:'a',weight:'w'};
+  document.querySelectorAll('.upage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.utab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('u-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// 환율 계산기 → 네이버 연결
+
+// CALCULATOR
+let cD='0',cE='',cO='',cP='',cJeq=false,cMem=0;
+function cUpd(){document.getElementById('c-main').textContent=cD;document.getElementById('c-expr').textContent=cE;}
+function cNum(n){
+  if(cJeq){cD='0';cE='';cJeq=false;}
+  if(n==='.'&&cD.includes('.'))return;
+  cD=cD==='0'&&n!='.'?n:cD+n;cUpd();
+}
+function cOp(op){
+  if(op==='AC'){cD='0';cE='';cO='';cP='';cJeq=false;cUpd();return;}
+  if(op==='+/-'){cD=String(-parseFloat(cD));cUpd();return;}
+  if(op==='%'){cD=String(parseFloat(cD)/100);cUpd();return;}
+  if(op==='='){
+    if(!cO||!cP){cJeq=true;cE=cD+' =';cUpd();return;}
+    const a=parseFloat(cP),b=parseFloat(cD);
+    let r=cO==='÷'?b===0?'오류':a/b:cO==='×'?a*b:cO==='−'?a-b:a+b;
+    cE=`${cP} ${cO} ${cD} =`;
+    cD=r==='오류'?'오류':String(+parseFloat(r).toPrecision(12));
+    cO='';cP='';cJeq=true;cUpd();return;
+  }
+  if(cO&&cP&&!cJeq){
+    const a=parseFloat(cP),b=parseFloat(cD);
+    let r=cO==='÷'?b===0?'오류':a/b:cO==='×'?a*b:cO==='−'?a-b:a+b;
+    cD=r==='오류'?'오류':String(+parseFloat(r).toPrecision(12));
+  }
+  cP=cD;cO=op;cE=cD+' '+op;cJeq=false;cD='0';cUpd();
+}
+function cFn(fn){
+  if(fn==='MC')cMem=0;
+  else if(fn==='MR'){cD=String(cMem);cJeq=false;cUpd();}
+  else if(fn==='M+')cMem+=parseFloat(cD);
+  else if(fn==='M-')cMem-=parseFloat(cD);
+}
+
+// KEYBOARD NUMPAD SUPPORT
+document.addEventListener('keydown',function(e){
+  // 계산기 탭이 활성화된 경우에만 작동
+  const calcPage=document.getElementById('page-calc');
+  if(!calcPage.classList.contains('active'))return;
+  // 입력창에 포커스가 있으면 무시
+  if(document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='SELECT')return;
+  const k=e.key;
+  if(k>='0'&&k<='9'){cNum(k);}
+  else if(k==='.'||k===','){cNum('.');}
+  else if(k==='+'){ cOp('+');}
+  else if(k==='-'){ cOp('−');}
+  else if(k==='*'){ cOp('×');}
+  else if(k==='/'){ e.preventDefault(); cOp('÷');}
+  else if(k==='Enter'||k==='='){ cOp('=');}
+  else if(k==='Backspace'){
+    if(cJeq){cD='0';cJeq=false;}
+    else if(cD.length>1)cD=cD.slice(0,-1);
+    else cD='0';
+    cUpd();
+  }
+  else if(k==='Escape'){ cOp('AC');}
+  else if(k==='%'){ cOp('%');}
+});
+
+// 환율: 탭 클릭 시 자동 로드
+</script>
+</body>
+</html>
