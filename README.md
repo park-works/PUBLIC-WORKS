@@ -1,3 +1,2 @@
-PUBLIC-WORKS
-공개 작업방
-* calc : 종합계산기(나이, 단위변환, 계산기, 환율)
+# PUBLIC-WORKS Index
+[calc] (https://park-works.github.io/PUBLIC-WORKS/calc/) : 종합계산기(나이, 단위변환, 계산기, 환율계산기)
