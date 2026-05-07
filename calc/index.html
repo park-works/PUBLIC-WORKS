@@ -706,6 +706,7 @@ body {
       <button class="utab active" onclick="switchUnit('length',this)">길이</button>
       <button class="utab" onclick="switchUnit('area',this)">넓이</button>
       <button class="utab" onclick="switchUnit('weight',this)">무게</button>
+      <button class="utab" onclick="switchUnit('volume',this)">부피</button>
     </div>
     <div class="card">
       <div id="u-length" class="upage active">
@@ -773,6 +774,33 @@ body {
           </select>
         </div>
         <div class="qgrid" id="wq"></div>
+      </div>
+
+      <div id="u-volume" class="upage">
+        <div class="urow">
+          <input type="number" id="vv1" placeholder="값 입력" value="1" oninput="uConvert('v',1)">
+          <select id="vu1" onchange="uConvert('v',1)">
+            <option value="floz" selected>oz</option>
+            <option value="ml">ml</option><option value="l">L</option>
+            <option value="tsp">tsp</option><option value="tbsp">tbsp</option>
+            <option value="cup">컵</option><option value="pt">파인트</option>
+            <option value="qt">쿼트</option><option value="gal">갤런</option>
+            <option value="cc">cc</option>
+          </select>
+        </div>
+        <div style="text-align:center;margin:4px 0"><button class="swap-btn" onclick="uSwap('v')">⇅</button></div>
+        <div class="urow">
+          <input type="number" id="vv2" placeholder="결과" oninput="uConvert('v',2)">
+          <select id="vu2" onchange="uConvert('v',1)">
+            <option value="floz">oz</option>
+            <option value="ml" selected>ml</option><option value="l">L</option>
+            <option value="tsp">tsp</option><option value="tbsp">tbsp</option>
+            <option value="cup">컵</option><option value="pt">파인트</option>
+            <option value="qt">쿼트</option><option value="gal">갤런</option>
+            <option value="cc">cc</option>
+          </select>
+        </div>
+        <div class="qgrid" id="vq"></div>
       </div>
     </div>
   </div>
@@ -1026,13 +1054,15 @@ function showFullResult(d){
 const TB={
   l:{mm:0.001,cm:0.01,m:1,km:1000,in:0.0254,ft:0.3048,yd:0.9144,mi:1609.344},
   a:{cm2:1e-4,m2:1,km2:1e6,ha:1e4,py:3.30579,ft2:0.092903,ac:4046.86},
-  w:{mg:1e-6,g:0.001,kg:1,t:1000,lb:0.453592,oz:0.0283495,gn:0.00375,gk:0.6}
+  w:{mg:1e-6,g:0.001,kg:1,t:1000,lb:0.453592,oz:0.0283495,gn:0.00375,gk:0.6},
+  v:{ml:1,l:1000,cc:1,floz:29.5735,tsp:4.92892,tbsp:14.7868,cup:236.588,pt:473.176,qt:946.353,gal:3785.41}
 };
-const QU={l:['mm','cm','m','km','ft','mi'],a:['cm2','m2','ha','py','ft2','ac'],w:['g','kg','t','lb','oz']};
+const QU={l:['mm','cm','m','km','ft','mi'],a:['cm2','m2','ha','py','ft2','ac'],w:['g','kg','t','lb','oz'],v:['ml','l','floz','tsp','tbsp','cup']};
 const UN={
   l:{mm:'mm',cm:'cm',m:'m',km:'km',in:'인치',ft:'피트',yd:'야드',mi:'마일'},
   a:{cm2:'cm²',m2:'m²',km2:'km²',ha:'ha',py:'평',ft2:'ft²',ac:'에이커'},
-  w:{mg:'mg',g:'g',kg:'kg',t:'톤',lb:'파운드',oz:'온스',gn:'돈',gk:'근'}
+  w:{mg:'mg',g:'g',kg:'kg',t:'톤',lb:'파운드',oz:'온스',gn:'돈',gk:'근'},
+  v:{ml:'ml',l:'L',cc:'cc',floz:'oz',tsp:'tsp',tbsp:'tbsp',cup:'컵',pt:'파인트',qt:'쿼트',gal:'갤런'}
 };
 
 function uConvert(t,dir){
@@ -1070,11 +1100,12 @@ function uSwap(t){
 }
 
 function switchUnit(name,btn){
-  const map={length:'l',area:'a',weight:'w'};
+  const map={length:'l',area:'a',weight:'w',volume:'v'};
   document.querySelectorAll('.upage').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.utab').forEach(b=>b.classList.remove('active'));
   document.getElementById('u-'+name).classList.add('active');
   btn.classList.add('active');
+  if(name==='volume'){ uConvert('v',1); }
 }
 
 // 환율 계산기 → 네이버 연결
@@ -1139,6 +1170,8 @@ document.addEventListener('keydown',function(e){
 });
 
 // 환율: 탭 클릭 시 자동 로드
+// 부피 초기값 계산 (1 oz → ml)
+uConvert('v',1);
 </script>
 </body>
 </html>
